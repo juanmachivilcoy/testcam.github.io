@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h3>Cuadrilla Chivilcel - Capturador</h3>
+    
+    <video id="video" autoplay playsinline style="width:100%; max-width: 400px;"></video>
+    <br>
+    
+    <button onclick="startCamera('user')">Cámara Frontal</button>
+    <button onclick="startCamera('environment')">Cámara Trasera</button>
+    <button onclick="takePhoto()">📸 Capturar Foto</button>
+    
+    <canvas id="canvas" style="display:none;"></canvas>
+    <br>
+    <img id="fotoResultado" style="width:100%; max-width: 400px; margin-top: 10px;">
+
+    <script>
+        async function startCamera(facingMode) {
+            const video = document.getElementById('video');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: facingMode } }
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Error al acceder a la cámara: " + err.message);
+            }
+        }
+
+        function takePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const img = document.getElementById('fotoResultado');
+            
+            // Ajustar el canvas al tamaño del video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Dibujar el fotograma actual
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convertir a imagen y mostrar
+            img.src = canvas.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>
