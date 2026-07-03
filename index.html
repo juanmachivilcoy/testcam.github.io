@@ -1,46 +1,40 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h3>Cuadrilla Chivilcel - Capturador</h3>
-    
+    <h3>Cuadrilla Chivilcel - Lector OCR</h3>
     <video id="video" autoplay playsinline style="width:100%; max-width: 400px;"></video>
     <br>
-    
-    <button onclick="startCamera('user')">Cámara Frontal</button>
     <button onclick="startCamera('environment')">Cámara Trasera</button>
-    <button onclick="takePhoto()">📸 Capturar Foto</button>
+    <button onclick="scanText()">🔍 Leer Texto</button>
     
+    <p id="resultado">Resultado: </p>
     <canvas id="canvas" style="display:none;"></canvas>
-    <br>
-    <img id="fotoResultado" style="width:100%; max-width: 400px; margin-top: 10px;">
 
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+    
     <script>
         async function startCamera(facingMode) {
             const video = document.getElementById('video');
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: facingMode } }
-                });
-                video.srcObject = stream;
-            } catch (err) {
-                alert("Error al acceder a la cámara: " + err.message);
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } } });
+            video.srcObject = stream;
         }
 
-        function takePhoto() {
+        async function scanText() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
-            const img = document.getElementById('fotoResultado');
+            const resultado = document.getElementById('resultado');
             
-            // Ajustar el canvas al tamaño del video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
             
-            // Dibujar el fotograma actual
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            resultado.innerText = "Analizando...";
             
-            // Convertir a imagen y mostrar
-            img.src = canvas.toDataURL('image/png');
+            // Usamos Tesseract para leer el texto de la imagen del canvas
+            Tesseract.recognize(canvas, 'spa', { logger: m => console.log(m) })
+                .then(({ data: { text } }) => {
+                    resultado.innerText = "Texto detectado: " + text;
+                });
         }
     </script>
 </body>
